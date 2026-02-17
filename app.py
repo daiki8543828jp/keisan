@@ -54,12 +54,19 @@ col1, col2 = st.columns(2)
 with col1:
     # value=None で初期状態を空欄にし、placeholderで入力のヒントを表示
     buy_amount = st.number_input("購入時の約定代金 (円)", min_value=0, value=None, placeholder="金額を入力", step=10000)
+    # 入力されたら、すぐ下にカンマ付きで強調表示
+    if buy_amount is not None:
+        st.markdown(f"💴 確認: **{buy_amount:,} 円**")
+
 with col2:
     sell_amount = st.number_input("売却時の約定代金 (円)", min_value=0, value=None, placeholder="金額を入力", step=10000)
+    # 入力されたら、すぐ下にカンマ付きで強調表示
+    if sell_amount is not None:
+        st.markdown(f"💴 確認: **{sell_amount:,} 円**")
 
 st.markdown("---")
 
-# 👈 両方の金額が入力されているかチェック
+# 両方の金額が入力されているかチェック
 if buy_amount is not None and sell_amount is not None:
     # 選択された証券会社に基づいて手数料を計算
     if broker == "光証券":
