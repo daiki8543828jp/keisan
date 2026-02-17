@@ -50,6 +50,9 @@ st.title("証券会社 手数料・損益計算ツール")
 
 broker = st.radio("証券会社を選択してください", ["光証券", "廣田証券"])
 
+# ▼ 株数の選択肢リストを作成（100株から10万株まで、100株刻み）
+share_options = list(range(100, 100100, 100))
+
 col1, col2 = st.columns(2)
 
 with col1:
@@ -57,20 +60,20 @@ with col1:
     
     # --- 購入1（常に表示） ---
     buy_price_1 = st.number_input("【購入1】の取得単価 (円)", min_value=0.0, value=None, placeholder="単価を入力", step=1.0, key="b1_price")
-    buy_shares_1 = st.number_input("【購入1】の株数", min_value=0, value=100, step=100, key="b1_shares")
+    buy_shares_1 = st.selectbox("【購入1】の株数", options=share_options, index=0, key="b1_shares")
     buy_amount_1 = None
     if buy_price_1 is not None:
         buy_amount_1 = int(buy_price_1 * buy_shares_1)
         st.markdown(f"💴 約定代金: **{buy_amount_1:,} 円**")
 
-    st.markdown("<br>", unsafe_allow_html=True) # 少し余白を空ける
+    st.markdown("<br>", unsafe_allow_html=True) 
 
     # --- 購入2（チェックボックスで表示切替） ---
     use_buy_2 = st.checkbox("＋ 購入2を追加する")
     buy_amount_2 = None
     if use_buy_2:
         buy_price_2 = st.number_input("【購入2】の取得単価 (円)", min_value=0.0, value=None, placeholder="単価を入力", step=1.0, key="b2_price")
-        buy_shares_2 = st.number_input("【購入2】の株数", min_value=0, value=100, step=100, key="b2_shares")
+        buy_shares_2 = st.selectbox("【購入2】の株数", options=share_options, index=0, key="b2_shares")
         if buy_price_2 is not None:
             buy_amount_2 = int(buy_price_2 * buy_shares_2)
             st.markdown(f"💴 約定代金: **{buy_amount_2:,} 円**")
@@ -82,7 +85,7 @@ with col1:
     buy_amount_3 = None
     if use_buy_3:
         buy_price_3 = st.number_input("【購入3】の取得単価 (円)", min_value=0.0, value=None, placeholder="単価を入力", step=1.0, key="b3_price")
-        buy_shares_3 = st.number_input("【購入3】の株数", min_value=0, value=100, step=100, key="b3_shares")
+        buy_shares_3 = st.selectbox("【購入3】の株数", options=share_options, index=0, key="b3_shares")
         if buy_price_3 is not None:
             buy_amount_3 = int(buy_price_3 * buy_shares_3)
             st.markdown(f"💴 約定代金: **{buy_amount_3:,} 円**")
@@ -90,7 +93,7 @@ with col1:
 with col2:
     st.markdown("#### ▼ 売却")
     sell_price = st.number_input("【売却】の単価 (円)", min_value=0.0, value=None, placeholder="単価を入力", step=1.0, key="s_price")
-    sell_shares = st.number_input("【売却】の株数", min_value=0, value=100, step=100, key="s_shares")
+    sell_shares = st.selectbox("【売却】の株数", options=share_options, index=0, key="s_shares")
     sell_amount = None
     if sell_price is not None:
         sell_amount = int(sell_price * sell_shares)
