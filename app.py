@@ -52,31 +52,38 @@ broker = st.radio("証券会社を選択してください", ["光証券", "廣�
 
 col1, col2 = st.columns(2)
 with col1:
-    buy_amount = st.number_input("購入時の約定代金 (円)", min_value=0, value=100000, step=10000)
+    # value=None で初期状態を空欄にし、placeholderで入力のヒントを表示
+    buy_amount = st.number_input("購入時の約定代金 (円)", min_value=0, value=None, placeholder="金額を入力", step=10000)
 with col2:
-    sell_amount = st.number_input("売却時の約定代金 (円)", min_value=0, value=110000, step=10000)
-
-# 選択された証券会社に基づいて手数料を計算
-if broker == "光証券":
-    buy_fee = calc_hikari_fee(buy_amount)
-    sell_fee = calc_hikari_fee(sell_amount)
-else:
-    buy_fee = calc_hirota_fee(buy_amount)
-    sell_fee = calc_hirota_fee(sell_amount)
-
-# 損益計算
-total_buy_cost = buy_amount + buy_fee
-total_sell_revenue = sell_amount - sell_fee
-profit = total_sell_revenue - total_buy_cost
+    sell_amount = st.number_input("売却時の約定代金 (円)", min_value=0, value=None, placeholder="金額を入力", step=10000)
 
 st.markdown("---")
-st.markdown("### 計算結果")
-st.write(f"**購入時:** 約定代金 {buy_amount:,}円 + 手数料 {buy_fee:,}円 = **支払総額 {total_buy_cost:,}円**")
-st.write(f"**売却時:** 約定代金 {sell_amount:,}円 - 手数料 {sell_fee:,}円 = **受取総額 {total_sell_revenue:,}円**")
 
-if profit > 0:
-    st.success(f"**最終損益: +{profit:,}円 (利益)**")
-elif profit < 0:
-    st.error(f"**最終損益: {profit:,}円 (損失)**")
+# 👈 両方の金額が入力されているかチェック
+if buy_amount is not None and sell_amount is not None:
+    # 選択された証券会社に基づいて手数料を計算
+    if broker == "光証券":
+        buy_fee = calc_hikari_fee(buy_amount)
+        sell_fee = calc_hikari_fee(sell_amount)
+    else:
+        buy_fee = calc_hirota_fee(buy_amount)
+        sell_fee = calc_hirota_fee(sell_amount)
+
+    # 損益計算
+    total_buy_cost = buy_amount + buy_fee
+    total_sell_revenue = sell_amount - sell_fee
+    profit = total_sell_revenue - total_buy_cost
+
+    st.markdown("### 計算結果")
+    st.write(f"**購入時:** 約定代金 {buy_amount:,}円 + 手数料 {buy_fee:,}円 = **支払総額 {total_buy_cost:,}円**")
+    st.write(f"**売却時:** 約定代金 {sell_amount:,}円 - 手数料 {sell_fee:,}円 = **受取総額 {total_sell_revenue:,}円**")
+
+    if profit > 0:
+        st.success(f"**最終損益: +{profit:,}円 (利益)**")
+    elif profit < 0:
+        st.error(f"**最終損益: {profit:,}円 (損失)**")
+    else:
+        st.info(f"**最終損益: 0円**")
 else:
-    st.info(f"**最終損益: 0円**")
+    # まだ入力されていない時に表示するメッセージ
+    st.info("💡 購入時と売却時の約定代金を入力すると、ここに計算結果が表示されます。")
