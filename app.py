@@ -72,4 +72,89 @@ with col1:
         buy_price_2 = st.number_input("【購入2】の取得単価 (円)", min_value=0.0, value=None, placeholder="単価を入力", step=1.0, key="b2_price")
         buy_shares_2 = st.number_input("【購入2】の株数", min_value=0, value=100, step=100, key="b2_shares")
         if buy_price_2 is not None:
-            buy_amount_2 =
+            buy_amount_2 = int(buy_price_2 * buy_shares_2)
+            st.markdown(f"💴 約定代金: **{buy_amount_2:,} 円**")
+            
+        st.markdown("<br>", unsafe_allow_html=True)
+
+    # --- 購入3（チェックボックスで表示切替） ---
+    use_buy_3 = st.checkbox("＋ 購入3を追加する")
+    buy_amount_3 = None
+    if use_buy_3:
+        buy_price_3 = st.number_input("【購入3】の取得単価 (円)", min_value=0.0, value=None, placeholder="単価を入力", step=1.0, key="b3_price")
+        buy_shares_3 = st.number_input("【購入3】の株数", min_value=0, value=100, step=100, key="b3_shares")
+        if buy_price_3 is not None:
+            buy_amount_3 = int(buy_price_3 * buy_shares_3)
+            st.markdown(f"💴 約定代金: **{buy_amount_3:,} 円**")
+
+with col2:
+    st.markdown("#### ▼ 売却")
+    sell_price = st.number_input("【売却】の単価 (円)", min_value=0.0, value=None, placeholder="単価を入力", step=1.0, key="s_price")
+    sell_shares = st.number_input("【売却】の株数", min_value=0, value=100, step=100, key="s_shares")
+    sell_amount = None
+    if sell_price is not None:
+        sell_amount = int(sell_price * sell_shares)
+        st.markdown(f"💴 約定代金: **{sell_amount:,} 円**")
+
+st.markdown("---")
+
+# 必須項目（購入1と売却）の単価が入力されているかチェック
+if buy_amount_1 is not None and sell_amount is not None:
+    
+    # 手数料計算用の関数を選択
+    fee_func = calc_hikari_fee if broker == "光証券" else calc_hirota_fee
+    
+    # --- 購入側の計算 ---
+    buy_fee_1 = fee_func(buy_amount_1)
+    total_buy_cost_1 = buy_amount_1 + buy_fee_1
+    
+    buy_fee_2 = 0
+    total_buy_cost_2 = 0
+    if buy_amount_2 is not None:
+        buy_fee_2 = fee_func(buy_amount_2)
+        total_buy_cost_2 = buy_amount_2 + buy_fee_2
+
+    buy_fee_3 = 0
+    total_buy_cost_3 = 0
+    if buy_amount_3 is not None:
+        buy_fee_3 = fee_func(buy_amount_3)
+        total_buy_cost_3 = buy_amount_3 + buy_fee_3
+        
+    # 購入支払総額（購入代金 + 購入手数料 の合計）
+    total_buy_cost = total_buy_cost_1 + total_buy_cost_2 + total_buy_cost_3
+    
+    # --- 売却側の計算 ---
+    sell_fee = fee_func(sell_amount)
+    total_sell_revenue = sell_amount - sell_fee
+    
+    # --- 損益計算 ---
+    profit = total_sell_revenue - total_buy_cost
+
+    # --- 結果の表示 ---
+    st.markdown("### 計算結果")
+    
+    st.write(f"**【購入1】:** 約定代金 {buy_amount_1:,}円 + 手数料 {buy_fee_1:,}円 = **支払 {total_buy_cost_1:,}円**")
+    if buy_amount_2 is not None:
+        st.write(f"**【購入2】:** 約定代金 {buy_amount_2:,}円 + 手数料 {buy_fee_2:,}円 = **支払 {total_buy_cost_2:,}円**")
+    if buy_amount_3 is not None:
+        st.write(f"**【購入3】:** 約定代金 {buy_amount_3:,}円 + 手数料 {buy_fee_3:,}円 = **支払 {total_buy_cost_3:,}円**")
+        
+    st.write(f"**🔴 購入・支払総額: {total_buy_cost:,}円**")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    st.write(f"**【売　却】:** 約定代金 {sell_amount:,}円 - 手数料 {sell_fee:,}円 = **受取 {total_sell_revenue:,}円**")
+    st.write(f"**🔵 売却・受取総額: {total_sell_revenue:,}円**")
+    
+    st.markdown("---")
+
+    if profit > 0:
+        st.success(f"**💰 最終損益: +{profit:,}円 (利益)**")
+    elif profit < 0:
+        st.error(f"**💸 最終損益: {profit:,}円 (損失)**")
+    else:
+        st.info(f"**⚖️ 最終損益: 0円**")
+        
+else:
+    # まだ入力されていない時に表示するメッセージ
+    st.info("💡 【購入1】と【売却】の単価を入力すると、ここに計算結果が表示されます。")
