@@ -45,12 +45,41 @@ def calc_hirota_fee(amount):
     else:
         return math.floor((amount * 0.002 + 60000) * 1.1)
 
+def calc_kosei_fee(amount):
+    """光世証券の手数料計算 (税込表に基づく、最低1100円、円未満切り捨て)"""
+    if amount <= 0:
+        return 0
+    
+    # 税込の料率で計算
+    if amount <= 1000000:
+        fee = amount * 0.00601
+    elif amount <= 5000000:
+        fee = amount * 0.00440 + 1606
+    elif amount <= 10000000:
+        fee = amount * 0.00315 + 7848
+    elif amount <= 30000000:
+        fee = amount * 0.00234 + 15988
+    elif amount <= 50000000:
+        fee = amount * 0.00134 + 46018
+    elif amount <= 100000000:
+        fee = amount * 0.00074 + 75993
+    elif amount <= 300000000:
+        fee = amount * 0.00066 + 84243
+    elif amount <= 500000000:
+        fee = amount * 0.00041 + 158493
+    else:
+        fee = amount * 0.00033 + 199743
+        
+    # 最低手数料1,100円を適用し、小数点以下を切り捨てて返す
+    return max(1100, math.floor(fee))
+
 # StreamlitのUI構築
 st.title("証券会社 手数料・損益計算ツール")
 
-broker = st.radio("証券会社を選択してください", ["光証券", "廣田証券"])
+# ▼ 証券会社の選択肢に「光世証券」を追加
+broker = st.radio("証券会社を選択してください", ["光証券", "廣田証券", "光世証券"])
 
-# ▼ 株数の選択肢リストを作成（100株から10万株まで、100株刻み）
+# 株数の選択肢リストを作成（100株から10万株まで、100株刻み）
 share_options = list(range(100, 100100, 100))
 
 col1, col2 = st.columns(2)
@@ -104,8 +133,13 @@ st.markdown("---")
 # 必須項目（購入1と売却）の単価が入力されているかチェック
 if buy_amount_1 is not None and sell_amount is not None:
     
-    # 手数料計算用の関数を選択
-    fee_func = calc_hikari_fee if broker == "光証券" else calc_hirota_fee
+    # ▼ 手数料計算用の関数を3社対応に変更
+    if broker == "光証券":
+        fee_func = calc_hikari_fee
+    elif broker == "廣田証券":
+        fee_func = calc_hirota_fee
+    else:
+        fee_func = calc_kosei_fee
     
     # --- 購入側の計算 ---
     buy_fee_1 = fee_func(buy_amount_1)
